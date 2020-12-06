@@ -6,9 +6,28 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 )
 
-func findTrees(fileName string) (int, error) {
+type arrayFlag []int
+
+func (i *arrayFlag) String() string {
+	return ""
+}
+
+func (i *arrayFlag) Set(value string) error {
+	valueInt, err := strconv.Atoi(value)
+	if err != nil {
+		return err
+	}
+	*i = append(*i, valueInt)
+	return nil
+}
+
+var slopesHorizontal arrayFlag
+var slopesVertical arrayFlag
+
+func findTrees(fileName string, slope [2]int) (int, error) {
 
 	file, err := os.Open(fileName)
 
@@ -30,10 +49,11 @@ func findTrees(fileName string) (int, error) {
 	currentCoords := [2]int{0, 0}
 	treeCount := 0
 	for currentCoords[1] < len(forestMap)-1 {
-		currentCoords[0] = (currentCoords[0] + 3) % width
-		currentCoords[1] = (currentCoords[1] + 1)
+		currentCoords[0] = (currentCoords[0] + slope[0]) % width
+		currentCoords[1] = (currentCoords[1] + slope[1])
 		if string(forestMap[currentCoords[1]][currentCoords[0]]) == "#" {
 			treeCount++
+
 		}
 	}
 	return treeCount, nil
@@ -42,13 +62,24 @@ func findTrees(fileName string) (int, error) {
 
 func main() {
 	var inputFile = flag.String("i", "", "Input")
+	flag.Var(&slopesHorizontal, "h", "Slope (horizontal part).")
+	flag.Var(&slopesVertical, "v", "Slope (vertical part).")
+
 	flag.Parse()
 	if *inputFile == "" {
 		log.Fatal(fmt.Errorf("No file specified"))
 	}
-	answer, err := findTrees(*inputFile)
-	if err != nil {
-		log.Fatal("Could not produce an answer: %s", err)
+	if len(slopesHorizontal) != len(slopesVertical) {
+		log.Fatal(fmt.Errorf("The number of horizontal and vertical parts (of the slopes) must be equal."))
 	}
-	fmt.Printf("Answer: %v\n", answer)
+	product := 1
+	for i, h := range slopesHorizontal {
+		answer, err := findTrees(*inputFile, [2]int{h, slopesVertical[i]})
+		if err != nil {
+			log.Fatal("Could not produce an answer: %s", err)
+		}
+		product *= answer
+		fmt.Printf("Answer %d: %v\n", i+1, answer)
+	}
+	fmt.Printf("Product: %v\n", product)
 }
