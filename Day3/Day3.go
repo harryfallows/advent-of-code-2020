@@ -24,6 +24,8 @@ func findTrees(fileName string) (int, error) {
 		forestMap = append(forestMap, scanner.Text())
 	}
 
+	file.Close()
+
 	width := len(forestMap[0])
 	currentCoords := [2]int{0, 0}
 	treeCount := 0
