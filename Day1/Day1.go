@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func findSum2020(fileName string) (int, error) {
+func findSum2020(fileName string) (int, int, error) {
 
 	file, err := os.Open(fileName)
 
@@ -25,7 +25,7 @@ func findSum2020(fileName string) (int, error) {
 	for scanner.Scan() {
 		lineInt, err := strconv.ParseInt(scanner.Text(), 10, 32)
 		if err != nil {
-			return 0, err
+			return 0, 0, err
 		}
 		intLines = append(intLines, int(lineInt))
 	}
@@ -33,16 +33,27 @@ func findSum2020(fileName string) (int, error) {
 	file.Close()
 
 	sort.Ints(intLines)
-
+	var return1 int
 	for i := 0; i < len(intLines); i++ {
 		int1 := intLines[i]
 		int2 := 2020 - int1
 		if intLines[sort.SearchInts(intLines, int2)] == int2 {
-			return int1 * int2, nil
+			return1 = int1 * int2
+			break
 		}
 	}
 
-	return 0, fmt.Errorf("Cannot find :(")
+	for i := 0; i < len(intLines); i++ {
+		int1 := intLines[i]
+		for j := i + 1; j < len(intLines); j++ {
+			int2 := intLines[j]
+			int3 := 2020 - (int1 + int2)
+			if intLines[sort.SearchInts(intLines, int3)] == int3 {
+				return return1, int1 * int2 * int3, nil
+			}
+		}
+	}
+	return 0, 0, fmt.Errorf("Cannot find :(")
 
 }
 
@@ -52,9 +63,9 @@ func main() {
 	if *inputFile == "" {
 		log.Fatal(fmt.Errorf("No file specified"))
 	}
-	answer, err := findSum2020(*inputFile)
+	answer1, answer2, err := findSum2020(*inputFile)
 	if err != nil {
 		log.Fatal("Could not produce an answer: %s", err)
 	}
-	fmt.Printf("Answer: %v\n", answer)
+	fmt.Printf("Answer 1: %d\nAnswer 2: %d\n", answer1, answer2)
 }
