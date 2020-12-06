@@ -55,6 +55,7 @@ func findValidPasswords(fileName string) (int, error) {
 			validPasswordsCount++
 		}
 	}
+	file.Close()
 	return validPasswordsCount, nil
 }
 
